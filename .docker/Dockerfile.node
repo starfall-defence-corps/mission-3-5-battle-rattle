@@ -1,0 +1,35 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV container=docker
+
+# systemd + SSH + the toolchain an IR runbook drives on a live host. All baked
+# in so the cadet's "ensure present" tasks are network-free no-ops at grade time
+# (the teaching stands; the apt round-trip does not).
+#   iptables     — block-ioc firewall drops
+#   passwd/login — rotate-creds credential changes (shadow utils are in base)
+#   python3      — the scored service restore-service brings back up
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    systemd systemd-sysv openssh-server \
+    python3 sudo iproute2 iptables procps curl ca-certificates bsdutils passwd \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN systemctl mask \
+    dev-hugepages.mount sys-fs-fuse-connections.mount \
+    systemd-udev-trigger.service systemd-udevd.service \
+    systemd-update-utmp.service getty@.service getty.target
+
+# ssh runs at boot; the scored service is planted per-scenario at 'make setup'.
+RUN systemctl enable ssh
+RUN mkdir -p /run/sshd /etc/sdc
+
+# cadet: key-based access for Ansible (authorized_keys bind-mounted read-only)
+RUN useradd -m -s /bin/bash cadet \
+    && echo 'cadet ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers.d/cadet \
+    && chmod 0440 /etc/sudoers.d/cadet \
+    && mkdir -p /home/cadet/.ssh && chmod 700 /home/cadet/.ssh \
+    && chown -R cadet:cadet /home/cadet/.ssh
+
+EXPOSE 22
+STOPSIGNAL SIGRTMIN+3
+CMD ["/sbin/init"]
