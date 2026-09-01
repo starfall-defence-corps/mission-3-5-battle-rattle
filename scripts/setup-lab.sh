@@ -172,7 +172,9 @@ write_evlog() {  # $1=out $2=indicator $3=count
 # ---------------------------------------------------------------------------
 #  Plant per-node state
 # ---------------------------------------------------------------------------
-declare -A TRI_A_HITS TRI_B_HITS
+# Per-node triage hit counts land in a TSV (node\tA_count\tB_count) — bash 3.2
+# (macOS default) has no associative arrays, so we avoid them entirely.
+HITS_TSV="$STAGE/hits.tsv"; : > "$HITS_TSV"
 armed_ok=1
 for node in "${NODES[@]}"; do
     # -- restore-service: golden store + installed units, healthy at setup ----
@@ -195,7 +197,7 @@ for node in "${NODES[@]}"; do
     # -- collect-triage: per-node evidence logs (disjoint counts) -------------
     docker exec "$node" mkdir -p /var/log/sdc
     ca="$(rand_count)"; cb="$(rand_count)"
-    TRI_A_HITS[$node]="$ca"; TRI_B_HITS[$node]="$cb"
+    printf '%s\t%s\t%s\n' "$node" "$ca" "$cb" >> "$HITS_TSV"
     write_evlog "$STAGE/evA_$node" "$TRI_A_IND" "$ca"; docker cp "$STAGE/evA_$node" "$node:$TRI_A_LOG"
     write_evlog "$STAGE/evB_$node" "$TRI_B_IND" "$cb"; docker cp "$STAGE/evB_$node" "$node:$TRI_B_LOG"
     # read-only canary — recon must not mutate the host
@@ -217,11 +219,18 @@ echo "    ${RANGE}: attacker source IPs armed (${IOC_A}, ${IOC_B}) on ${IFACE}"
 # ===========================================================================
 #  Record baseline.json (grader ground truth — gitignored)
 # ===========================================================================
-python3 - > "$LAB_DIR/baseline.json" <<PY
-import json
+python3 - "${HITS_TSV}" > "$LAB_DIR/baseline.json" <<PY
+import json, sys
+_A, _B = {}, {}
+with open(sys.argv[1]) as _f:
+    for _line in _f:
+        _line = _line.rstrip("\n")
+        if not _line:
+            continue
+        _node, _ca, _cb = _line.split("\t")
+        _A[_node] = int(_ca); _B[_node] = int(_cb)
 def hits(m):
-    return {"sdc-web": ${TRI_A_HITS[sdc-web]:-0}, "sdc-db": ${TRI_A_HITS[sdc-db]:-0}, "sdc-comms": ${TRI_A_HITS[sdc-comms]:-0}} if m=="A" else \
-           {"sdc-web": ${TRI_B_HITS[sdc-web]:-0}, "sdc-db": ${TRI_B_HITS[sdc-db]:-0}, "sdc-comms": ${TRI_B_HITS[sdc-comms]:-0}}
+    return _A if m == "A" else _B
 data = {
   "version": 1,
   "run_id": "${RUN_ID}",

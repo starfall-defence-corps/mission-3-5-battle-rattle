@@ -33,10 +33,15 @@ def _password_matches(host, user, password):
     """True iff `password` is the account's current password (verified on the
     node via crypt against the stored $6$ hash — Linux-side, so it works
     regardless of the cadet's host OS)."""
+    # Verify against the stored hash with crypt on the node. Accept ANY real
+    # crypt algorithm ($6$ sha512, $y$ yescrypt — the Ubuntu 22.04 chpasswd
+    # default, etc.); reject a locked/absent hash. Correctness is the crypt
+    # match, not the algorithm.
     script = (
         "import crypt,subprocess,sys\n"
         f"h=subprocess.check_output(['getent','shadow','{user}']).decode().split(':')[1]\n"
-        f"sys.exit(0 if h.startswith('$6$') and crypt.crypt({password!r}, h)==h else 1)\n"
+        f"ok = bool(h) and h[0]=='$' and crypt.crypt({password!r}, h)==h\n"
+        "sys.exit(0 if ok else 1)\n"
     )
     r = node_run(host, "python3 -c " + _shq(script))
     return r.returncode == 0
