@@ -1,0 +1,15 @@
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# The range/injector — opaque range infrastructure, NOT a fleet target.
+# It holds the mission's nonce indicator IPs as interface aliases (added at
+# 'make setup' with NET_ADMIN) so the grader can source traffic from a given
+# indicator and confirm the fleet's response actually dropped it. python3 is
+# the only probe tool the harness needs (raw sockets bound to a source IP).
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 iproute2 ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /lab /run/range
+CMD ["sleep", "infinity"]

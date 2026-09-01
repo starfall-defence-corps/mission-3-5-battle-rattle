@@ -1,0 +1,24 @@
+# runbooks/block-ioc.yml — firewall-DROP a single indicator across the fleet.
+#
+# Run:  ansible-playbook runbooks/block-ioc.yml -e ioc_ip=203.0.113.10
+#
+# ARIA runs THIS runbook against TWO different attacker IPs (Phase 1). It must be
+# parameterised on ioc_ip — a hardcoded address blocks one and lets the other in.
+# It must also be idempotent (re-running adds no duplicate rule).
+- name: Block an indicator fleet-wide
+  hosts: fleet
+  become: true
+  tasks:
+    - name: Require an indicator to block
+      ansible.builtin.assert:
+        that:
+          - ioc_ip is defined
+          - ioc_ip | length > 0
+        fail_msg: "Pass the indicator, e.g. -e ioc_ip=203.0.113.10"
+
+    # TODO: drop ALL traffic from ioc_ip on every node. Block the ONE indicator,
+    # not everyone (no blanket policy change), and make it idempotent.
+    # Hint: ansible.builtin.iptables — chain: INPUT, source: "{{ ioc_ip }}", jump: DROP
+    - name: TODO — drop the indicator's traffic
+      ansible.builtin.debug:
+        msg: "Replace me: firewall-DROP all traffic from {{ ioc_ip }}."

@@ -1,0 +1,31 @@
+# runbooks/rotate-creds.yml — rotate a compromised credential fleet-wide.
+#
+# Run:  ansible-playbook runbooks/rotate-creds.yml \
+#           -e target_user=svc_ab -e new_password='S0me-New-Secret'
+#
+# ARIA runs THIS runbook against TWO different compromised users (Phase 3). For
+# each, the OLD password must stop working and new_password must work, on every
+# node — and the account must stay usable (not locked). Re-running must NOT churn
+# the credential: use a STABLE hash (a fixed salt), not a fresh one each run.
+- name: Rotate a compromised credential fleet-wide
+  hosts: fleet
+  become: true
+  tasks:
+    - name: Require a target user and a new password
+      ansible.builtin.assert:
+        that:
+          - target_user is defined and target_user | length > 0
+          - new_password is defined and new_password | length > 0
+        fail_msg: "Pass -e target_user=<user> -e new_password=<secret>"
+
+    # TODO: set target_user's password to new_password on every node, keeping the
+    # account usable. Make it idempotent — the stored hash must be identical on a
+    # second run (a random salt each run is NOT idempotent).
+    # Hint: ansible.builtin.user password="{{ new_password | password_hash('sha512', salt) }}"
+    #       where `salt` is a STABLE string ≤16 chars, e.g.
+    #         (target_user | hash('md5'))[:16]
+    #       so the stored hash is identical on a re-run (a random salt is not
+    #       idempotent). update_password: always makes it set even if one exists.
+    - name: TODO — rotate the credential
+      ansible.builtin.debug:
+        msg: "Replace me: set {{ target_user }}'s password to the new secret."

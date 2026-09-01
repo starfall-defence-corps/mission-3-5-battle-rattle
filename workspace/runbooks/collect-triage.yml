@@ -1,0 +1,33 @@
+# runbooks/collect-triage.yml — read-only recon into a machine-readable report.
+#
+# Run:  ansible-playbook runbooks/collect-triage.yml \
+#           -e evidence_log=/var/log/sdc/inc-XXXX.log \
+#           -e report_path=/var/log/sdc/triage-XXXX.json
+#
+# ARIA runs THIS runbook against TWO different incidents (Phase 2). On EACH node
+# it must find the indicator that appears most in evidence_log and write, at
+# report_path on that node:
+#
+#     {"indicator_ip": "<top source IP>", "hits": <count on THIS node>}
+#
+# It must discover the indicator (never hardcode one), count per node, be
+# deterministic (same report on a re-run), and change nothing else (recon is
+# read-only — no become needed).
+- name: Collect incident triage evidence
+  hosts: fleet
+  gather_facts: false
+  tasks:
+    - name: Require an evidence log and a report path
+      ansible.builtin.assert:
+        that:
+          - evidence_log is defined and evidence_log | length > 0
+          - report_path is defined and report_path | length > 0
+        fail_msg: "Pass -e evidence_log=<path> -e report_path=<path>"
+
+    # TODO: read evidence_log, extract source IPs (src=<ip>), find the most
+    # frequent one and its count ON THIS NODE, and write the JSON report to
+    # report_path. Hints: slurp/command to read; a regex/split to pull src=;
+    # to_nice_json or a template to write. Do NOT modify anything else.
+    - name: TODO — analyse the evidence and write the report
+      ansible.builtin.debug:
+        msg: "Replace me: find the top indicator in {{ evidence_log }} and report it."

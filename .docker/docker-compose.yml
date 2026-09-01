@@ -1,0 +1,76 @@
+# =============================================================================
+# MOS 5 — Battle Rattle: reusable incident-response runbooks
+#
+# Three fleet nodes (the boxes you respond on) + an opaque range/injector
+# (sdc-range) that sources traffic from the mission's nonce indicator IPs so the
+# grader can prove your runbooks' effects landed. Only the fleet's SSH is
+# host-mapped (2221-2223) — the range talks to the fleet on the docker net, so
+# the shared SSH-port budget is untouched. One lab at a time (see doctor).
+# =============================================================================
+services:
+  sdc-web:
+    build: { context: ., dockerfile: Dockerfile.node }
+    container_name: sdc-web
+    hostname: sdc-web
+    privileged: true
+    cgroup: host
+    tmpfs: [/run, /run/lock, /tmp]
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - ./ssh-keys/authorized_keys:/home/cadet/.ssh/authorized_keys:ro
+    networks:
+      fleet_net: { ipv4_address: 172.30.0.11 }
+    ports: ["2221:22"]
+
+  sdc-db:
+    build: { context: ., dockerfile: Dockerfile.node }
+    container_name: sdc-db
+    hostname: sdc-db
+    privileged: true
+    cgroup: host
+    tmpfs: [/run, /run/lock, /tmp]
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - ./ssh-keys/authorized_keys:/home/cadet/.ssh/authorized_keys:ro
+    networks:
+      fleet_net: { ipv4_address: 172.30.0.12 }
+    ports: ["2222:22"]
+
+  sdc-comms:
+    build: { context: ., dockerfile: Dockerfile.node }
+    container_name: sdc-comms
+    hostname: sdc-comms
+    privileged: true
+    cgroup: host
+    tmpfs: [/run, /run/lock, /tmp]
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - ./ssh-keys/authorized_keys:/home/cadet/.ssh/authorized_keys:ro
+    networks:
+      fleet_net: { ipv4_address: 172.30.0.13 }
+    ports: ["2223:22"]
+
+  # ── Range / injector — opaque range infra, NOT a target ──────────────────
+  # Holds the nonce indicator IPs as aliases (added at 'make setup'). The grader
+  # execs in to source probe traffic from a chosen indicator. No host port.
+  sdc-range:
+    build: { context: ., dockerfile: Dockerfile.range }
+    container_name: sdc-range
+    hostname: sdc-range
+    restart: unless-stopped
+    cap_add: [NET_ADMIN]
+    mem_limit: 128m
+    pids_limit: 256
+    volumes:
+      - ../.lab:/lab            # baseline + range state (gitignored)
+    networks:
+      fleet_net: { ipv4_address: 172.30.0.20 }
+    depends_on: [sdc-web, sdc-db, sdc-comms]
+
+networks:
+  fleet_net:
+    name: fleet_net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
