@@ -98,7 +98,7 @@ Each one must work for **any** indicator, incident, user, or service — ARIA ru
 
 The fleet comes up **online and already under incident**: an attacker IP hammering it, evidence logs planted, two users compromised, two services downed. Your four runbooks are the only fix — and each must be reusable, not written for the one scenario you happened to poke at.
 
-Only one SDC lab can run at a time — all missions share ports 2221-2223 and subnet 172.30.0.0/24. Run `make destroy` in any other mission first.
+Only one SDC lab at a time is supported — run `make destroy` in any other mission first.
 
 ## Available Commands
 
@@ -144,7 +144,7 @@ skipped and `make test` still works locally.
 
 ## Troubleshooting
 
-**Containers won't start**: Ensure Docker Desktop is running; check for port conflicts on 2221-2223 (only one SDC lab can run at a time — `make destroy` in any other mission first).
+**Containers won't start**: Ensure Docker Desktop is running; check for port conflicts on 2221-2223. Only one SDC lab at a time is supported — run `make destroy` in any other mission first.
 
 **`make test` reports everything skipped**: the range isn't up or the baseline is missing — run `make reset`.
 
