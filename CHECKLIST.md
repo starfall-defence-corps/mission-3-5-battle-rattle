@@ -75,3 +75,5 @@ phase is blocked, see `docs/HINTS.md`.
 - [ ] `workspace/inventory/`, `workspace/ansible.cfg`, the README, and the ARIA workflow are untouched
 - [ ] `make test` — all four phases pass
 - [ ] `make submit` — work submitted for ARIA review
+
+**Next stop**: the Final Exercise is in development — check the [Academy Hub](https://github.com/starfall-defence-corps/sdc-academy) for what's next.
