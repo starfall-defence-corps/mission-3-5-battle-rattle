@@ -28,7 +28,7 @@ runbook against scenario A twice (once for effect, once for idempotence),
 does the same against scenario B, and checks every node both times —
 never trusting your inventory or your code as proof. Runbooks in this
 mission are not automatically safe to re-run against a *live* fleet the way
-MOS 4's telemetry role was — `block-ioc.yml` and `rotate-creds.yml` change
+[MOS 4](https://github.com/starfall-defence-corps/mission-3-4-eyes-everywhere)'s telemetry role was — `block-ioc.yml` and `rotate-creds.yml` change
 firewall and credential state — but `make test` re-arms and re-checks
 correctly every time you run it, so re-running it as you iterate is always
 safe. Use `make reset` if you want the fleet and range rebuilt from scratch
