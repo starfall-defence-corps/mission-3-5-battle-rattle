@@ -1,6 +1,6 @@
 # runbooks/block-ioc.yml — firewall-DROP a single indicator across the fleet.
 #
-# Run:  ansible-playbook runbooks/block-ioc.yml -e ioc_ip=203.0.113.10
+# Run:  ansible-playbook workspace/runbooks/block-ioc.yml -e ioc_ip=203.0.113.10
 #
 # ARIA runs THIS runbook against TWO different attacker IPs (Phase 1). It must be
 # parameterised on ioc_ip — a hardcoded address blocks one and lets the other in.

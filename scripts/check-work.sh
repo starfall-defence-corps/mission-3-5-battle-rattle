@@ -36,7 +36,7 @@ if [ $EXIT_CODE -eq 0 ]; then
     echo -e "  ARIA: All objectives verified."
     echo -e "  MOS 5 status: COMPLETE"
     echo -e ""
-    echo -e "  Cadet, your battle rattle holds. Every runbook you"
+    echo -e "  Lieutenant Commander, your battle rattle holds. Every runbook you"
     echo -e "  wrote worked against an indicator you had never seen —"
     echo -e "  because you parameterised, not memorised. The Hydra"
     echo -e "  changed shape and your response never blinked. These"

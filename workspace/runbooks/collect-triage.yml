@@ -1,6 +1,6 @@
 # runbooks/collect-triage.yml — read-only recon into a machine-readable report.
 #
-# Run:  ansible-playbook runbooks/collect-triage.yml \
+# Run:  ansible-playbook workspace/runbooks/collect-triage.yml \
 #           -e evidence_log=/var/log/sdc/inc-XXXX.log \
 #           -e report_path=/var/log/sdc/triage-XXXX.json
 #
