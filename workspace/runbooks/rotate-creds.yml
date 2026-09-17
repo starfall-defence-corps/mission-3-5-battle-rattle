@@ -1,6 +1,6 @@
 # runbooks/rotate-creds.yml — rotate a compromised credential fleet-wide.
 #
-# Run:  ansible-playbook runbooks/rotate-creds.yml \
+# Run:  ansible-playbook workspace/runbooks/rotate-creds.yml \
 #           -e target_user=svc_ab -e new_password='S0me-New-Secret'
 #
 # ARIA runs THIS runbook against TWO different compromised users (Phase 3). For

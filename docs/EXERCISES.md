@@ -9,18 +9,11 @@ DOCUMENT: EXERCISES — Phase-by-Phase Operational Instructions
 Complete each phase in sequence. Run `make test` after each phase. Do not
 advance until ARIA confirms compliance.
 
-**Two directories, two purposes:**
-
-- **Ansible commands** (`ansible-playbook`): Run from `workspace/` where `ansible.cfg` lives.
-- **Make commands** (`make test`, `make reset`): Run from the **project root** (where the `Makefile` lives).
-
-When a phase says "Run ARIA's Verification", return to the project root first:
-
-```bash
-cd ..        # from workspace/ back to project root
-make test
-cd workspace # return to workspace for the next phase
-```
+**One directory for everything**: run every command in this mission —
+`ansible-playbook ...` and `make ...` — from the **project root** (the
+folder with the `Makefile`). An `ansible.cfg` lives both there and in
+`workspace/`, so Ansible works from either; the steps below assume the
+project root throughout.
 
 **A note on `make test`**: for each runbook, it arms two independent,
 randomised scenarios (A and B) that you cannot see, runs your **same**
@@ -60,7 +53,7 @@ environment.
 
 ### Step 0.2 — Start the Fleet and Arm the Incident
 
-From the **project root directory** (not `workspace/`), run:
+From the **project root directory**, run:
 
 ```bash
 make setup
@@ -80,13 +73,12 @@ Everything you write lives in `workspace/runbooks/`. Take a look at what's
 already scaffolded for you:
 
 ```bash
-cd workspace
-cat ansible.cfg
-cat inventory/hosts.yml
-cat runbooks/block-ioc.yml
-cat runbooks/collect-triage.yml
-cat runbooks/rotate-creds.yml
-cat runbooks/restore-service.yml
+cat workspace/ansible.cfg
+cat workspace/inventory/hosts.yml
+cat workspace/runbooks/block-ioc.yml
+cat workspace/runbooks/collect-triage.yml
+cat workspace/runbooks/rotate-creds.yml
+cat workspace/runbooks/restore-service.yml
 ```
 
 Each file is a complete, runnable playbook already — it just asserts its
@@ -145,13 +137,11 @@ Fill in `workspace/runbooks/block-ioc.yml`.
 Test manually first, with an address of your own choosing:
 
 ```bash
-ansible-playbook runbooks/block-ioc.yml -e ioc_ip=198.51.100.7
+ansible-playbook workspace/runbooks/block-ioc.yml -e ioc_ip=198.51.100.7
 ```
 
 ```bash
-cd ..
 make test
-cd workspace
 ```
 
 ### Step 1.3 — Acceptance
@@ -204,14 +194,12 @@ trusting `make test`:
 make ssh-web
 echo '2026-01-01 sshd: Failed password src=203.0.113.5' | sudo tee -a /tmp/my-test.log
 exit
-ansible-playbook runbooks/collect-triage.yml \
+ansible-playbook workspace/runbooks/collect-triage.yml \
   -e evidence_log=/tmp/my-test.log -e report_path=/tmp/my-report.json
 ```
 
 ```bash
-cd ..
 make test
-cd workspace
 ```
 
 ### Step 2.3 — Acceptance
@@ -249,14 +237,12 @@ Fill in `workspace/runbooks/rotate-creds.yml`.
 ### Step 3.2 — Apply and Verify
 
 ```bash
-ansible-playbook runbooks/rotate-creds.yml \
+ansible-playbook workspace/runbooks/rotate-creds.yml \
   -e target_user=cadet_test -e new_password='Some-New-Secret-1'
 ```
 
 ```bash
-cd ..
 make test
-cd workspace
 ```
 
 ### Step 3.3 — Acceptance
@@ -304,14 +290,12 @@ runs cleanly against a healthy service (which should report `changed=0`,
 since nothing needs reconciling):
 
 ```bash
-ansible-playbook runbooks/restore-service.yml \
+ansible-playbook workspace/runbooks/restore-service.yml \
   -e service_name=some-service -e golden_root=/opt/sdc/known-good
 ```
 
 ```bash
-cd ..
 make test
-cd workspace
 ```
 
 ### Step 4.3 — Acceptance

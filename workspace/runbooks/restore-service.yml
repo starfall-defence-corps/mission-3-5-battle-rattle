@@ -1,6 +1,6 @@
 # runbooks/restore-service.yml — restore a downed service from known-good state.
 #
-# Run:  ansible-playbook runbooks/restore-service.yml \
+# Run:  ansible-playbook workspace/runbooks/restore-service.yml \
 #           -e service_name=sdc-svc-ab -e golden_root=/opt/sdc/known-good
 #
 # ARIA breaks TWO different services TWO different ways (Phase 4) — one unit
